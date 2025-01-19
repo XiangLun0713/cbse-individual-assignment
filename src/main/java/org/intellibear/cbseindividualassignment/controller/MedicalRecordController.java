@@ -3,6 +3,7 @@ package org.intellibear.cbseindividualassignment.controller;
 import java.util.List;
 
 import org.intellibear.cbseindividualassignment.model.dto.MedicalRecordDTO;
+import org.intellibear.cbseindividualassignment.model.dto.MedicalRecordInsightsDTO;
 import org.intellibear.cbseindividualassignment.service.MedicalRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -64,5 +65,12 @@ public class MedicalRecordController {
             @PathVariable Long id) {
         medicalRecordService.deleteMedicalRecord(id, userId);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/insights")
+    public ResponseEntity<MedicalRecordInsightsDTO> getMedicalRecordInsights(
+            @PathVariable Long userId) {
+        MedicalRecordInsightsDTO insights = medicalRecordService.getMedicalRecordInsights(userId);
+        return ResponseEntity.ok(insights);
     }
 }
