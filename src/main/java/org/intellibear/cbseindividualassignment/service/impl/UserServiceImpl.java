@@ -1,9 +1,10 @@
-package org.intellibear.cbseindividualassignment.service;
+package org.intellibear.cbseindividualassignment.service.impl;
 
 import org.intellibear.cbseindividualassignment.mapper.UserMapper;
 import org.intellibear.cbseindividualassignment.model.dto.UserDTO;
 import org.intellibear.cbseindividualassignment.model.entity.User;
 import org.intellibear.cbseindividualassignment.repository.UserRepo;
+import org.intellibear.cbseindividualassignment.service.UserService;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 

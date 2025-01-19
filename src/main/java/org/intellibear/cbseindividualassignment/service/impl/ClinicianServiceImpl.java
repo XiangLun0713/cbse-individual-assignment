@@ -1,4 +1,4 @@
-package org.intellibear.cbseindividualassignment.service;
+package org.intellibear.cbseindividualassignment.service.impl;
 
 import org.intellibear.cbseindividualassignment.mapper.ClinicianMapper;
 import org.intellibear.cbseindividualassignment.model.dto.ClinicianDTO;
@@ -6,6 +6,7 @@ import org.intellibear.cbseindividualassignment.model.entity.Clinician;
 import org.intellibear.cbseindividualassignment.model.entity.User;
 import org.intellibear.cbseindividualassignment.repository.ClinicianRepo;
 import org.intellibear.cbseindividualassignment.repository.UserRepo;
+import org.intellibear.cbseindividualassignment.service.ClinicianService;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
