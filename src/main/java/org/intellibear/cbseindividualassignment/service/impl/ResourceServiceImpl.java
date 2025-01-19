@@ -2,12 +2,16 @@ package org.intellibear.cbseindividualassignment.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.intellibear.cbseindividualassignment.mapper.ResourceMapper;
 import org.intellibear.cbseindividualassignment.model.dto.ResourceDTO;
+import org.intellibear.cbseindividualassignment.model.entity.MedicalRecord;
 import org.intellibear.cbseindividualassignment.model.entity.Resource;
+import org.intellibear.cbseindividualassignment.model.entity.User;
 import org.intellibear.cbseindividualassignment.repository.ResourceRepo;
+import org.intellibear.cbseindividualassignment.repository.UserRepo;
 import org.intellibear.cbseindividualassignment.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -18,10 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ResourceServiceImpl implements ResourceService {
     private final ResourceRepo resourceRepo;
+    private final UserRepo userRepo;
 
     @Autowired
-    public ResourceServiceImpl(ResourceRepo resourceRepo) {
+    public ResourceServiceImpl(ResourceRepo resourceRepo, UserRepo userRepo) {
         this.resourceRepo = resourceRepo;
+        this.userRepo = userRepo;
+
     }
 
     @Override
@@ -79,5 +86,26 @@ public class ResourceServiceImpl implements ResourceService {
             throw new ResourceNotFoundException("Resource not found with ID: " + id);
         }
         resourceRepo.deleteById(id);
+    }
+
+    @Override
+    public List<ResourceDTO> getResourceRecommendations(Long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Get all unique conditions from user's medical records
+        Set<String> userConditions = user.getMedicalRecords().stream()
+                .map(MedicalRecord::getCondition)
+                .collect(Collectors.toSet());
+
+        // Get resources matching any of the user's conditions
+        List<Resource> recommendedResources = userConditions.stream()
+                .flatMap(condition -> resourceRepo.findByConditionIgnoreCase(condition).stream())
+                .distinct()
+                .collect(Collectors.toList());
+
+        return recommendedResources.stream()
+                .map(ResourceMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }

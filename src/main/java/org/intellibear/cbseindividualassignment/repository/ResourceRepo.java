@@ -11,4 +11,6 @@ public interface ResourceRepo extends JpaRepository<Resource, Long> {
     List<Resource> findByCondition(String condition);
 
     List<Resource> findByTitleContainingIgnoreCase(String title);
+
+    List<Resource> findByConditionIgnoreCase(String condition);
 }

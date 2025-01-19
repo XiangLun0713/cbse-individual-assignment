@@ -70,4 +70,11 @@ public class ResourceController {
         resourceService.deleteResource(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/users/{userId}/recommendations")
+    public ResponseEntity<List<ResourceDTO>> getResourceRecommendations(
+            @PathVariable Long userId) {
+        List<ResourceDTO> recommendations = resourceService.getResourceRecommendations(userId);
+        return ResponseEntity.ok(recommendations);
+    }
 }

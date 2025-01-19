@@ -18,4 +18,6 @@ public interface ResourceService {
     ResourceDTO updateResource(Long id, ResourceDTO resourceDTO);
 
     void deleteResource(Long id);
+
+    List<ResourceDTO> getResourceRecommendations(Long userId);
 }
