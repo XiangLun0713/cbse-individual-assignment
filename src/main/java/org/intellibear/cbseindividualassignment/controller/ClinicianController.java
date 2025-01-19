@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/clinicians")
+@RequestMapping("/api/users/{userId}/clinicians")
 public class ClinicianController {
 
     private final ClinicianService clinicianService;
@@ -25,40 +25,43 @@ public class ClinicianController {
         this.clinicianService = clinicianService;
     }
 
-    @GetMapping("/{clinicianId}")
-    public ResponseEntity<ClinicianDTO> getClinicianById(@PathVariable Long clinicianId) {
-        ClinicianDTO clinician = clinicianService.getClinicianById(clinicianId);
+    @PostMapping
+    public ResponseEntity<ClinicianDTO> createClinician(
+            @PathVariable Long userId,
+            @RequestBody ClinicianDTO clinicianDTO) {
+        ClinicianDTO createdClinician = clinicianService.createClinician(clinicianDTO, userId);
+        return new ResponseEntity<>(createdClinician, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ClinicianDTO> getClinician(
+            @PathVariable Long userId,
+            @PathVariable Long id) {
+        ClinicianDTO clinician = clinicianService.getClinicianByIdAndUserId(id, userId);
         return ResponseEntity.ok(clinician);
     }
 
     @GetMapping
-    public ResponseEntity<List<ClinicianDTO>> getAllClinicians() {
-        List<ClinicianDTO> clinicians = clinicianService.getAllClinicians();
+    public ResponseEntity<List<ClinicianDTO>> getAllClinicians(
+            @PathVariable Long userId) {
+        List<ClinicianDTO> clinicians = clinicianService.getCliniciansByUserId(userId);
         return ResponseEntity.ok(clinicians);
     }
 
-    @PostMapping("/user/{userId}")
-    public ResponseEntity<Void> addClinician(@RequestBody ClinicianDTO clinicianDTO, @PathVariable Long userId) {
-        clinicianService.addClinician(clinicianDTO, userId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
-    @PutMapping("/{clinicianId}")
-    public ResponseEntity<ClinicianDTO> updateClinician(@PathVariable Long clinicianId,
+    @PutMapping("/{id}")
+    public ResponseEntity<ClinicianDTO> updateClinician(
+            @PathVariable Long userId,
+            @PathVariable Long id,
             @RequestBody ClinicianDTO clinicianDTO) {
-        ClinicianDTO updatedClinician = clinicianService.updateClinician(clinicianId, clinicianDTO);
+        ClinicianDTO updatedClinician = clinicianService.updateClinician(id, userId, clinicianDTO);
         return ResponseEntity.ok(updatedClinician);
     }
 
-    @DeleteMapping("/{clinicianId}")
-    public ResponseEntity<Void> deleteClinician(@PathVariable Long clinicianId) {
-        clinicianService.deleteClinician(clinicianId);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteClinician(
+            @PathVariable Long userId,
+            @PathVariable Long id) {
+        clinicianService.deleteClinician(id, userId);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<ClinicianDTO>> getCliniciansByUserId(@PathVariable Long userId) {
-        List<ClinicianDTO> clinicians = clinicianService.getCliniciansByUserId(userId);
-        return ResponseEntity.ok(clinicians);
     }
 }

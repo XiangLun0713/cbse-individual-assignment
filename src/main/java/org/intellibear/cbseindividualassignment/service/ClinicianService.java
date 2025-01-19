@@ -5,15 +5,13 @@ import java.util.List;
 import org.intellibear.cbseindividualassignment.model.dto.ClinicianDTO;
 
 public interface ClinicianService {
-    ClinicianDTO getClinicianById(Long clinicianId);
+    ClinicianDTO createClinician(ClinicianDTO clinicianDTO, Long userId);
 
-    List<ClinicianDTO> getAllClinicians();
-
-    void addClinician(ClinicianDTO clinicianDTO, Long userId);
-
-    ClinicianDTO updateClinician(Long clinicianId, ClinicianDTO clinicianDTO);
-
-    void deleteClinician(Long clinicianId);
+    ClinicianDTO getClinicianByIdAndUserId(Long id, Long userId);
 
     List<ClinicianDTO> getCliniciansByUserId(Long userId);
+
+    ClinicianDTO updateClinician(Long id, Long userId, ClinicianDTO clinicianDTO);
+
+    void deleteClinician(Long id, Long userId);
 }

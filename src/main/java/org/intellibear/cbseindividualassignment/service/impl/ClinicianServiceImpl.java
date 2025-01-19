@@ -1,5 +1,9 @@
 package org.intellibear.cbseindividualassignment.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.intellibear.cbseindividualassignment.mapper.ClinicianMapper;
 import org.intellibear.cbseindividualassignment.model.dto.ClinicianDTO;
 import org.intellibear.cbseindividualassignment.model.entity.Clinician;
@@ -9,12 +13,10 @@ import org.intellibear.cbseindividualassignment.repository.UserRepo;
 import org.intellibear.cbseindividualassignment.service.ClinicianService;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class ClinicianServiceImpl implements ClinicianService {
 
     private final ClinicianRepo clinicianRepo;
@@ -26,62 +28,77 @@ public class ClinicianServiceImpl implements ClinicianService {
     }
 
     @Override
-    public ClinicianDTO getClinicianById(Long clinicianId) {
-        Clinician clinician = clinicianRepo.findById(clinicianId)
-                .orElseThrow(() -> new ResourceNotFoundException("Clinician not found with ID: " + clinicianId));
-        return ClinicianMapper.toDTO(clinician);
-    }
-
-    @Override
-    public List<ClinicianDTO> getAllClinicians() {
-        return clinicianRepo.findAll().stream()
-                .map(ClinicianMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void addClinician(ClinicianDTO clinicianDTO, Long userId) {
+    public ClinicianDTO createClinician(ClinicianDTO clinicianDTO, Long userId) {
         User user = userRepo.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Clinician clinician = ClinicianMapper.toEntity(clinicianDTO);
         clinician.setCreatedAt(LocalDateTime.now());
-        
-        // Add clinician to user's list
-        user.getClinicians().add(clinician);
+
+        Clinician savedClinician = clinicianRepo.save(clinician);
+
+        List<Clinician> userClinicians = user.getClinicians();
+        userClinicians.add(savedClinician);
+        user.setClinicians(userClinicians);
         userRepo.save(user);
+
+        return ClinicianMapper.toDTO(savedClinician);
     }
 
     @Override
-    public ClinicianDTO updateClinician(Long clinicianId, ClinicianDTO clinicianDTO) {
-        Clinician clinician = clinicianRepo.findById(clinicianId)
-                .orElseThrow(() -> new ResourceNotFoundException("Clinician not found with ID: " + clinicianId));
+    public ClinicianDTO getClinicianByIdAndUserId(Long id, Long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        clinician.setName(clinicianDTO.getName());
-        clinician.setEmail(clinicianDTO.getEmail());
-        clinician.setPhoneNumber(clinicianDTO.getPhoneNumber());
-        clinician.setSpecialty(clinicianDTO.getSpecialty());
-        clinician.setHospital(clinicianDTO.getHospital());
+        Clinician clinician = user.getClinicians().stream()
+                .filter(c -> c.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Clinician not found"));
 
-        Clinician updatedClinician = clinicianRepo.save(clinician);
-        return ClinicianMapper.toDTO(updatedClinician);
-    }
-
-    @Override
-    public void deleteClinician(Long clinicianId) {
-        if (!clinicianRepo.existsById(clinicianId)) {
-            throw new ResourceNotFoundException("Clinician not found with ID: " + clinicianId);
-        }
-        clinicianRepo.deleteById(clinicianId);
+        return ClinicianMapper.toDTO(clinician);
     }
 
     @Override
     public List<ClinicianDTO> getCliniciansByUserId(Long userId) {
         User user = userRepo.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         return user.getClinicians().stream()
                 .map(ClinicianMapper::toDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public ClinicianDTO updateClinician(Long id, Long userId, ClinicianDTO clinicianDTO) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Clinician existingClinician = user.getClinicians().stream()
+                .filter(c -> c.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Clinician not found"));
+
+        existingClinician.setName(clinicianDTO.getName());
+        existingClinician.setEmail(clinicianDTO.getEmail());
+        existingClinician.setPhoneNumber(clinicianDTO.getPhoneNumber());
+        existingClinician.setSpecialty(clinicianDTO.getSpecialty());
+        existingClinician.setHospital(clinicianDTO.getHospital());
+
+        Clinician updatedClinician = clinicianRepo.save(existingClinician);
+        return ClinicianMapper.toDTO(updatedClinician);
+    }
+
+    @Override
+    public void deleteClinician(Long id, Long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        boolean removed = user.getClinicians().removeIf(clinician -> clinician.getId().equals(id));
+        if (!removed) {
+            throw new ResourceNotFoundException("Clinician not found");
+        }
+
+        userRepo.save(user);
+        clinicianRepo.deleteById(id);
     }
 }

@@ -7,7 +7,6 @@ public class ClinicianDTO {
     private String phoneNumber;
     private String specialty;
     private String hospital;
-    private Long userId; // To maintain association with User
 
     public Long getId() {
         return id;
@@ -55,13 +54,5 @@ public class ClinicianDTO {
 
     public void setHospital(String hospital) {
         this.hospital = hospital;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
     }
 }
